@@ -1,0 +1,15 @@
+{
+    "name": "msca-actions-toolkit",
+    "version": "1.0.0",
+    "description": "Microsoft Security Code Analysis for GitHub Actions toolkit.",
+    "author": "Microsoft Corporation",
+    "license": "MIT",
+    "dependencies": {
+        "@actions/core": "1.2.6",
+        "@actions/exec": "1.0.4",
+        "js-yaml": "3.13.1"
+    },
+    "devDependencies": {
+        "typescript": "^4.1.5"
+    }
+}
