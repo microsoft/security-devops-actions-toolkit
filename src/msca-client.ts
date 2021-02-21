@@ -11,6 +11,9 @@ export class MscaClient {
 
     async setupEnvironment() {
 
+        // prevent welcome message
+        process.env.DOTNET_NOLOGO = 'true';
+
         console.log('------------------------------------------------------------------------------');
 
         if (!process.env.MSCA_FILEPATH) {
@@ -90,7 +93,7 @@ export class MscaClient {
         } catch (error) {
             error('Exception occurred while initializing MSCA:');
             error(error);
-            core.setFailed(error.Message);
+            core.setFailed(error);
             return;
         }
 
@@ -102,7 +105,7 @@ export class MscaClient {
             // TODO: process exit codes
         } catch (error) {
             error(error);
-            core.setFailed(error.Message);
+            core.setFailed(error);
             return;
         }
     }
