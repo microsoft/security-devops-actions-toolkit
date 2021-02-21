@@ -1,14 +1,15 @@
-# Project
+# Microsoft Security Code Analysis GitHub Actions Toolkit
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+ibrary for running the [Microsoft Security Code Analysis CLI](https://aka.ms/msca-nuget).
 
-As the maintainer of this project, please make a few updates:
+## Leveraged By
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+* [GitHub OSSAR Action](https://github.com/github/ossar-action)
+* [Microsoft Security Code Analysis GitHub Action](https://github.com/microsoft/security-code-analysis-action)
+
+## Related
+
+* [MSCA Task Library for Azure DevOps](https://github.com/microsoft/msca-azdevops-task-lib)
 
 ## Contributing
 

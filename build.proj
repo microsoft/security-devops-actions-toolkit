@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
         <RepoDirectory Condition=" '$(RepoDirectory)' == '' ">$(MSBuildThisFileDirectory)</RepoDirectory>
@@ -8,22 +8,25 @@
         <NpmInstall Condition=" '$(NpmInstall)' == ''">false</NpmInstall>
     </PropertyGroup>
 
+    <Target Name="Clean">
+        <RemoveDir Directories="$(LibDirectory)" />
+    </Target>
+
     <Target
         Name="NpmInstall"
         Inputs="$(RepoDirectory)"
         Outputs="$(RepoDirectory)\node_modules"
         Condition=" '$(NpmInstall)' == 'true' ">
-        <Message Text="Installing npm dependencies in: $(RepoDirectory)..." />
+        <Message Text="Installing npm dependencies in: $(RepoDirectory)" />
         <Exec Command="npm install" WorkingDirectory="$(RepoDirectory)" />
     </Target>
 
-    <Target Name="Build" DependsOnTargets="NpmInstall">
-        <Message Text="Compiling msca-azdevops-toolkit..." />
+    <Target Name="Build" DependsOnTargets="Clean;NpmInstall">
+        <Message Text="Compiling msca-actions-toolkit." />
         <Exec Command="tsc" WorkingDirectory="$(RepoDirectory)" />
 
         <Copy SourceFiles="$(SrcDirectory)/msca-toolkit.proj" DestinationFolder="$(LibDirectory)" />
         <Copy SourceFiles="$(RepoDirectory)/package.json" DestinationFolder="$(LibDirectory)" />
-        <Copy SourceFiles="$(RepoDirectory)/package-lock.json" DestinationFolder="$(LibDirectory)" />
     </Target>
 
 </Project>

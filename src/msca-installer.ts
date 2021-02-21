@@ -10,14 +10,14 @@ export class MscaInstaller {
         console.log('Installing Microsoft Security Code Analysis Cli...');
 
         if (process.env.MSCA_FILEPATH) {
-            console.log(`MSCA Cli File Path overriden by %MSCA_FILEPATH%: ${process.env.MSCA_FILEPATH}`);
+            console.log(`MSCA CLI File Path overriden by %MSCA_FILEPATH%: ${process.env.MSCA_FILEPATH}`);
             return
         }
 
         if (process.env.MSCA_DIRECTORY) {
-            console.log(`MSCA Cli Directory overriden by %MSCA_DIRECTORY%: ${process.env.MSCA_DIRECTORY}`);
+            console.log(`MSCA CLI Directory overriden by %MSCA_DIRECTORY%: ${process.env.MSCA_DIRECTORY}`);
 
-            // Set the mscai file path
+            // Set the  file path
             let mscaFilePath = path.join(process.env.MSCA_DIRECTORY, 'guardian');
             core.debug(`mscaFilePath = ${mscaFilePath}`);
 
@@ -86,19 +86,19 @@ export class MscaInstaller {
     }
 
     isInstalled(
-        mscaVersionsDirectory: string,
+        versionsDirectory: string,
         cliVersion: string) : boolean {
         let installed = false;
 
         if (cliVersion.includes("*")) {
-            core.debug(`MSCA Cli version contains a latest quantifier: ${cliVersion}. Continuing with install...`);
+            core.debug(`MSCA CLI version contains a latest quantifier: ${cliVersion}. Continuing with install...`);
             return installed;
         }
 
-        this.setMscaiVariablesWithVersion(mscaVersionsDirectory, cliVersion);
+        this.setVariablesWithVersion(versionsDirectory, cliVersion);
         
         if (fs.existsSync(process.env.MSCA_DIRECTORY)) {
-            console.log(`MSCA  Cli v${cliVersion} already installed.`);
+            console.log(`MSCA CLI v${cliVersion} already installed.`);
             installed = true;
         }
 
@@ -106,24 +106,22 @@ export class MscaInstaller {
     }
 
     resolvePackageDirectory(
-        mscaVersionsDirectory: string,
+        versionDirectory: string,
         cliVersion: string) : void {
         if (cliVersion.includes("*")) {
             // find the latest directory
-            let mscaPackageDirectory = this.findLatestVersionDirectory(mscaVersionsDirectory);
-            this.setMscaiVariables(mscaPackageDirectory);
+            let packageDirectory = this.findLatestVersionDirectory(versionDirectory);
+            this.setVariables(packageDirectory);
         } else {
-            this.setMscaiVariablesWithVersion(mscaVersionsDirectory, cliVersion);
+            this.setVariablesWithVersion(versionDirectory, cliVersion);
         }
 
         if (!fs.existsSync(process.env.MSCA_DIRECTORY)) {
-            throw `Microsoft Security Code Analysis Cli v${cliVersion} was not found after installation.`
+            throw `MSCA CLI v${cliVersion} was not found after installation.`
         }
     }
 
-    findLatestVersionDirectory(
-        mscaVersionsDirectory: string,
-        isPreRelease: boolean = false) : string {
+    findLatestVersionDirectory(versionsDirectory: string, isPreRelease: boolean = false) : string {
 
         let latestDirectory = null;
         let latestVersionParts = null;
@@ -131,8 +129,8 @@ export class MscaInstaller {
         let latestPreReleaseFlag = null;
 
         // Get all of the directories in the versions directory
-        core.debug(`Searching for all version folders in: ${mscaVersionsDirectory}`);
-        let dirs = this.getDirectories(mscaVersionsDirectory);
+        core.debug(`Searching for all version folders in: ${versionsDirectory}`);
+        let dirs = this.getDirectories(versionsDirectory);
 
         // Evaluate each directory
         for (let dirIndex = 0; dirIndex < dirs.length; dirIndex++) {
@@ -143,7 +141,7 @@ export class MscaInstaller {
                 continue;
             }
 
-            core.debug(`Evaluating mscai directory: ${dir}`);
+            core.debug(`Evaluating MSCA directory: ${dir}`);
             // If we reuse the same RegExp object, it will return null every other call
             const dirRegex = new RegExp(/^(\d+\.?){1,6}(\-\w+)?$/g);
             if (dirRegex.exec(dir) == null) {
@@ -223,7 +221,7 @@ export class MscaInstaller {
 
             if (isLatest) {
                 core.debug(`Setting latest version directory: ${dir}`);
-                latestDirectory = path.join(mscaVersionsDirectory, dir);
+                latestDirectory = path.join(versionsDirectory, dir);
                 latestVersionParts = versionParts;
                 latestIsPreRelease = dirIsPreRelease;
                 latestPreReleaseFlag = dirPreReleaseFlag;
@@ -246,18 +244,15 @@ export class MscaInstaller {
         return fs.statSync(path.join(directory, p)).isDirectory();
     }
 
-    setMscaiVariablesWithVersion(
-        mscaVersionsDirectory: string,
-        cliVersion: string) : void {
+    setVariablesWithVersion(versionDirectory: string, cliVersion: string) : void {
+        let packageDirectory = path.join(versionDirectory, cliVersion)
+        core.debug(`packageDirectory = ${packageDirectory}`);
 
-        let mscaPackageDirectory = path.join(mscaVersionsDirectory, cliVersion)
-        core.debug(`mscaPackageDirectory = ${mscaPackageDirectory}`);
-
-        this.setMscaiVariables(mscaPackageDirectory);
+        this.setVariables(packageDirectory);
     }
 
-    setMscaiVariables(mscaPackageDirectory: string) : void {
-        let mscaDirectory = path.join(mscaPackageDirectory, 'tools');
+    setVariables(packageDirectory: string) : void {
+        let mscaDirectory = path.join(packageDirectory, 'tools');
         core.debug(`mscaDirectory = ${mscaDirectory}`);
 
         let mscaFilePath = path.join(mscaDirectory, 'guardian');

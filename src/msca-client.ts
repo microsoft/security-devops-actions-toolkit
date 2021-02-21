@@ -36,31 +36,32 @@ export class MscaClient {
         return !value || !value.trim();
     }
 
-    async init() {
-
+    getCliFilePath() : string {
         let cliFilePath: string = process.env.MSCA_FILEPATH;
         core.debug(`cliFilePath = ${cliFilePath}`);
+        return cliFilePath;
+    }
 
+    async init() {
         try {
+            let cliFilePath = this.getCliFilePath();
             await exec.exec(cliFilePath, ['init', '--force']);
         }
         catch (error) {
-            core.debug(error.Message);
+            core.debug(error);
         }
     }
 
     async run(inputArgs: string[]) {
         let cliFilePath: string = null;
-        let args: [];
+        let args: string[] = [];
 
         try {
             await this.setupEnvironment();
             await this.init();
 
-            cliFilePath: string = process.env.MSCA_FILEPATH;
+            cliFilePath = process.env.MSCA_FILEPATH;
             core.debug(`cliFilePath = ${cliFilePath}`);
-
-            args.push['run'];
 
             if (inputArgs != null)
             {
@@ -86,7 +87,6 @@ export class MscaClient {
 
             args.push('--export-breaking-results-to-file');
             args.push(`${sarifFile}`);
-
         } catch (error) {
             error('Exception occurred while initializing MSCA:');
             error(error);
