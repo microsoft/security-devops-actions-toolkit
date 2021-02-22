@@ -1,6 +1,6 @@
 # Microsoft Security Code Analysis GitHub Actions Toolkit
 
-ibrary for running the [Microsoft Security Code Analysis CLI](https://aka.ms/msca-nuget).
+A GitHub Actions javascript library for running the [Microsoft Security Code Analysis CLI](https://aka.ms/msca-nuget).
 
 ## Leveraged By
 
