@@ -5,7 +5,6 @@ A GitHub Actions javascript library for running the [Microsoft Security Code Ana
 ## Leveraged By
 
 * [GitHub OSSAR Action](https://github.com/github/ossar-action)
-* [Microsoft Security Code Analysis GitHub Action](https://github.com/microsoft/security-code-analysis-action)
 
 ## Related
 
