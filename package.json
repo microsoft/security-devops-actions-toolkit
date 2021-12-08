@@ -1,14 +1,13 @@
 {
     "name": "microsoft-security-devops-actions-toolkit",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "description": "Microsoft Security DevOps for GitHub Actions toolkit.",
     "author": "Microsoft Corporation",
     "license": "MIT",
     "homepage": "https://github.com/microsoft/security-devops-actions-toolkit",
     "dependencies": {
         "@actions/core": "1.2.6",
-        "@actions/exec": "1.0.4",
-        "js-yaml": "3.13.1"
+        "@actions/exec": "1.0.4"
     },
     "devDependencies": {
         "@types/node": "^8.0.53",

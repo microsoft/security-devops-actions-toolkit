@@ -3,7 +3,6 @@ import * as process from 'process';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as fs from 'fs';
-import * as yaml from 'js-yaml';
 import { MsdoInstaller } from './msdo-installer'
 
 export class MsdoClient {
