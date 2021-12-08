@@ -4,40 +4,40 @@ import * as process from 'process';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 
-export class MscaInstaller {
+export class MsdoInstaller {
 
     async install(cliVersion: string) {
-        console.log('Installing Microsoft Security Code Analysis Cli...');
+        console.log('Installing Microsoft Security DevOps Cli...');
 
-        if (process.env.MSCA_FILEPATH) {
-            console.log(`MSCA CLI File Path overriden by %MSCA_FILEPATH%: ${process.env.MSCA_FILEPATH}`);
+        if (process.env.MSDO_FILEPATH) {
+            console.log(`MSDO CLI File Path overriden by %MSDO_FILEPATH%: ${process.env.MSDO_FILEPATH}`);
             return
         }
 
-        if (process.env.MSCA_DIRECTORY) {
-            console.log(`MSCA CLI Directory overriden by %MSCA_DIRECTORY%: ${process.env.MSCA_DIRECTORY}`);
+        if (process.env.MSDO_DIRECTORY) {
+            console.log(`MSDO CLI Directory overriden by %MSDO_DIRECTORY%: ${process.env.MSDO_DIRECTORY}`);
 
             // Set the  file path
-            let mscaFilePath = path.join(process.env.MSCA_DIRECTORY, 'guardian');
-            core.debug(`mscaFilePath = ${mscaFilePath}`);
+            let msdoFilePath = path.join(process.env.MSDO_DIRECTORY, 'guardian');
+            core.debug(`msdoFilePath = ${msdoFilePath}`);
 
-            process.env.MSCA_FILEPATH = mscaFilePath;
+            process.env.MSDO_FILEPATH = msdoFilePath;
             return;
         }      
 
-        // initialize the _msca directory
-        let mscaDirectory = path.resolve(path.join(process.env.GITHUB_WORKSPACE, '../../_msca'));
-        core.debug(`mscaDirectory = ${mscaDirectory}`);
-        this.ensureDirectory(mscaDirectory);
+        // initialize the _msdo directory
+        let msdoDirectory = path.resolve(path.join(process.env.GITHUB_WORKSPACE, '../../_msdo'));
+        core.debug(`msdoDirectory = ${msdoDirectory}`);
+        this.ensureDirectory(msdoDirectory);
 
-        let mscaPackagesDirectory = path.join(mscaDirectory, 'versions');
-        core.debug(`mscaPackagesDirectory = ${mscaPackagesDirectory}`);
-        this.ensureDirectory(mscaPackagesDirectory);
+        let msdoPackagesDirectory = path.join(msdoDirectory, 'versions');
+        core.debug(`msdoPackagesDirectory = ${msdoPackagesDirectory}`);
+        this.ensureDirectory(msdoPackagesDirectory);
 
-        let mscaVersionsDirectory = path.join(mscaPackagesDirectory, 'microsoft.security.codeanalysis.cli');
-        core.debug(`mscaVersionsDirectory = ${mscaVersionsDirectory}`);
+        let msdoVersionsDirectory = path.join(msdoPackagesDirectory, 'microsoft.security.codeanalysis.cli');
+        core.debug(`msdoVersionsDirectory = ${msdoVersionsDirectory}`);
 
-        if (this.isInstalled(mscaVersionsDirectory, cliVersion)) {
+        if (this.isInstalled(msdoVersionsDirectory, cliVersion)) {
             return;
         }
 
@@ -48,18 +48,18 @@ export class MscaInstaller {
         do {
             failed = false;
 
-            const mscaToolkitDirectory = path.resolve(__dirname);
-            core.debug(`mscaToolkitDirectory = ${mscaToolkitDirectory}`);
+            const msdoToolkitDirectory = path.resolve(__dirname);
+            core.debug(`msdoToolkitDirectory = ${msdoToolkitDirectory}`);
 
-            const mscaProjectFile = path.join(mscaToolkitDirectory, 'msca-toolkit.proj');
-            core.debug(`mscaProjectFile = ${mscaProjectFile}`);
+            const msdoProjectFile = path.join(msdoToolkitDirectory, 'msdo-toolkit.proj');
+            core.debug(`msdoProjectFile = ${msdoProjectFile}`);
 
             let args = [
                 'restore',
-                mscaProjectFile,
-                `/p:MscaPackageVersion=${cliVersion}`,
+                msdoProjectFile,
+                `/p:MsdoPackageVersion=${cliVersion}`,
                 '--packages',
-                mscaPackagesDirectory,
+                msdoPackagesDirectory,
                 '--source',
                 'https://api.nuget.org/v3/index.json'
             ];
@@ -76,7 +76,7 @@ export class MscaInstaller {
             }
         } while (failed);
 
-        this.resolvePackageDirectory(mscaVersionsDirectory, cliVersion);
+        this.resolvePackageDirectory(msdoVersionsDirectory, cliVersion);
     }
 
     ensureDirectory(directory: string) : void {
@@ -91,14 +91,14 @@ export class MscaInstaller {
         let installed = false;
 
         if (cliVersion.includes("*")) {
-            core.debug(`MSCA CLI version contains a latest quantifier: ${cliVersion}. Continuing with install...`);
+            core.debug(`MSDO CLI version contains a latest quantifier: ${cliVersion}. Continuing with install...`);
             return installed;
         }
 
         this.setVariablesWithVersion(versionsDirectory, cliVersion);
         
-        if (fs.existsSync(process.env.MSCA_DIRECTORY)) {
-            console.log(`MSCA CLI v${cliVersion} already installed.`);
+        if (fs.existsSync(process.env.MSDO_DIRECTORY)) {
+            console.log(`MSDO CLI v${cliVersion} already installed.`);
             installed = true;
         }
 
@@ -116,8 +116,8 @@ export class MscaInstaller {
             this.setVariablesWithVersion(versionDirectory, cliVersion);
         }
 
-        if (!fs.existsSync(process.env.MSCA_DIRECTORY)) {
-            throw `MSCA CLI v${cliVersion} was not found after installation.`
+        if (!fs.existsSync(process.env.MSDO_DIRECTORY)) {
+            throw `MSDO CLI v${cliVersion} was not found after installation.`
         }
     }
 
@@ -141,7 +141,7 @@ export class MscaInstaller {
                 continue;
             }
 
-            core.debug(`Evaluating MSCA directory: ${dir}`);
+            core.debug(`Evaluating MSDO directory: ${dir}`);
             // If we reuse the same RegExp object, it will return null every other call
             const dirRegex = new RegExp(/^(\d+\.?){1,6}(\-\w+)?$/g);
             if (dirRegex.exec(dir) == null) {
@@ -252,13 +252,13 @@ export class MscaInstaller {
     }
 
     setVariables(packageDirectory: string) : void {
-        let mscaDirectory = path.join(packageDirectory, 'tools');
-        core.debug(`mscaDirectory = ${mscaDirectory}`);
+        let msdoDirectory = path.join(packageDirectory, 'tools');
+        core.debug(`msdoDirectory = ${msdoDirectory}`);
 
-        let mscaFilePath = path.join(mscaDirectory, 'guardian');
-        core.debug(`mscaFilePath = ${mscaFilePath}`);
+        let msdoFilePath = path.join(msdoDirectory, 'guardian');
+        core.debug(`msdoFilePath = ${msdoFilePath}`);
 
-        process.env.MSCA_DIRECTORY = mscaDirectory;
-        process.env.MSCA_FILEPATH = mscaFilePath;
+        process.env.MSDO_DIRECTORY = msdoDirectory;
+        process.env.MSDO_FILEPATH = msdoFilePath;
     }
 }

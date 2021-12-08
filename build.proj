@@ -22,10 +22,10 @@
     </Target>
 
     <Target Name="Build" DependsOnTargets="Clean;NpmInstall">
-        <Message Text="Compiling msca-actions-toolkit." />
-        <Exec Command="tsc" WorkingDirectory="$(RepoDirectory)" />
+        <Message Text="Compiling microsoft-security-devops-actions-toolkit." />
+        <Exec Command="npx tsc" WorkingDirectory="$(RepoDirectory)" />
 
-        <Copy SourceFiles="$(SrcDirectory)/msca-toolkit.proj" DestinationFolder="$(LibDirectory)" />
+        <Copy SourceFiles="$(SrcDirectory)/msdo-toolkit.proj" DestinationFolder="$(LibDirectory)" />
         <Copy SourceFiles="$(RepoDirectory)/package.json" DestinationFolder="$(LibDirectory)" />
     </Target>
 

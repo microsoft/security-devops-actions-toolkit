@@ -1,6 +1,6 @@
-# Microsoft Security Code Analysis GitHub Actions Toolkit
+# Microsoft Security DevOps GitHub Actions Toolkit
 
-A GitHub Actions javascript library for running the [Microsoft Security Code Analysis CLI](https://aka.ms/msca-nuget).
+A GitHub Actions javascript library for running the [Microsoft Security DevOps CLI](https://aka.ms/msdo-nuget).
 
 ## Leveraged By
 
@@ -8,7 +8,7 @@ A GitHub Actions javascript library for running the [Microsoft Security Code Ana
 
 ## Related
 
-* [MSCA Task Library for Azure DevOps](https://github.com/microsoft/msca-azdevops-task-lib)
+* [Microsoft Security DevOps Task Library for Azure DevOps](https://github.com/microsoft/security-devops-azdevops-task-lib)
 
 ## Contributing
 
