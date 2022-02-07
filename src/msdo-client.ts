@@ -90,7 +90,7 @@ export class MsdoClient {
             args.push('--export-breaking-results-to-file');
             args.push(`${sarifFile}`);
 
-            args.push('--environment-name');
+            args.push('--telemetry-environment');
             args.push('github');
 
         } catch (error) {
