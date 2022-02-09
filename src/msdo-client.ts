@@ -48,8 +48,7 @@ export class MsdoClient {
         try {
             let cliFilePath = this.getCliFilePath();
             await exec.exec(cliFilePath, ['init', '--force']);
-        }
-        catch (error) {
+        } catch (error) {
             core.debug(error);
         }
     }
@@ -65,10 +64,8 @@ export class MsdoClient {
             cliFilePath = process.env.MSDO_FILEPATH;
             core.debug(`cliFilePath = ${cliFilePath}`);
 
-            if (inputArgs != null)
-            {
-                for (let i = 0; i < inputArgs.length; i++)
-                {
+            if (inputArgs != null) {
+                for (let i = 0; i < inputArgs.length; i++) {
                     args.push(inputArgs[i]);
                 }
             }
@@ -94,8 +91,8 @@ export class MsdoClient {
             args.push('github');
 
         } catch (error) {
-            error('Exception occurred while initializing MSDO:');
-            error(error);
+            core.error('Exception occurred while initializing MSDO:');
+            core.error(error);
             core.setFailed(error);
             return;
         }
@@ -107,7 +104,6 @@ export class MsdoClient {
 
             // TODO: process exit codes
         } catch (error) {
-            error(error);
             core.setFailed(error);
             return;
         }
