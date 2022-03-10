@@ -53,7 +53,7 @@ export class MsdoClient {
         }
     }
 
-    async run(inputArgs: string[]) {
+    async run(inputArgs: string[], telemetryEnvironment: string = 'github') {
         let cliFilePath: string = null;
         let args: string[] = [];
 
@@ -88,7 +88,7 @@ export class MsdoClient {
             args.push(`${sarifFile}`);
 
             args.push('--telemetry-environment');
-            args.push('github');
+            args.push(telemetryEnvironment);
 
         } catch (error) {
             core.error('Exception occurred while initializing MSDO:');
