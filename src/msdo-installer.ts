@@ -23,7 +23,7 @@ export class MsdoInstaller {
 
             process.env.MSDO_FILEPATH = msdoFilePath;
             return;
-        }      
+        }
 
         // initialize the _msdo directory
         let agentDirectory = path.resolve(path.join(process.env.GITHUB_WORKSPACE, '../../_msdo'));

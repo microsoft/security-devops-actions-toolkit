@@ -4,6 +4,7 @@ A GitHub Actions javascript library for running the [Microsoft Security DevOps C
 
 ## Leveraged By
 
+* [Microsoft Security DevOps Action](https://github.com/microsoft/security-devops-action)
 * [GitHub OSSAR Action](https://github.com/github/ossar-action)
 
 ## Related
