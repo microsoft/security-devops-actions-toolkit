@@ -67,7 +67,7 @@ export class MsdoInstaller {
                 msdoProjectFile,
                 `/p:MsdoPackageVersion=${cliVersion}`,
                 '--packages',
-                msdoVersionsDirectory,
+                agentVersionsDirectory,
                 '--source',
                 'https://api.nuget.org/v3/index.json'
             ];
