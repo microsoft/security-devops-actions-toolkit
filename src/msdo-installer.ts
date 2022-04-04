@@ -30,14 +30,6 @@ export class MsdoInstaller {
         core.debug(`agentDirectory = ${agentDirectory}`);
         this.ensureDirectory(agentDirectory);
 
-        let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
-        if (!agentPackagesDirectory) {
-            agentPackagesDirectory = path.join(agentDirectory, 'packages');
-            core.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
-            this.ensureDirectory(agentPackagesDirectory);
-            process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
-        }
-
         let agentVersionsDirectory = path.join(agentDirectory, 'versions');
         core.debug(`agentVersionsDirectory = ${agentVersionsDirectory}`);
         this.ensureDirectory(agentVersionsDirectory);
@@ -67,7 +59,7 @@ export class MsdoInstaller {
                 msdoProjectFile,
                 `/p:MsdoPackageVersion=${cliVersion}`,
                 '--packages',
-                msdoVersionsDirectory,
+                agentVersionsDirectory,
                 '--source',
                 'https://api.nuget.org/v3/index.json'
             ];
