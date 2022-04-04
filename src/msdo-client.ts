@@ -21,6 +21,8 @@ export class MsdoClient {
             await msdoInstaller.install(cliVersion);
         }
 
+        process.env.GDN_SETTINGS_FOLDERS = `Install=${process.env.MSDO_PACKAGES_DIRECTORY}`
+
         console.log('------------------------------------------------------------------------------');
     }
 
