@@ -25,8 +25,8 @@
         <Message Text="Compiling microsoft-security-devops-actions-toolkit." />
         <Exec Command="npx tsc" WorkingDirectory="$(RepoDirectory)" />
 
-        <Copy SourceFiles="$(SrcDirectory)/msdo-toolkit.proj" DestinationFolder="$(LibDirectory)" />
         <Copy SourceFiles="$(RepoDirectory)/package.json" DestinationFolder="$(LibDirectory)" />
+        <Copy SourceFiles="$(RepoDirectory)/.npmrc" DestinationFolder="$(LibDirectory)" />
     </Target>
 
 </Project>
