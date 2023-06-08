@@ -3,15 +3,13 @@ import * as process from 'process';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as fs from 'fs';
-import { MsdoInstaller } from './msdo-installer'
+import * as common from './msdo-common';
+import { MsdoInstaller } from './msdo-installer';
 
 export class MsdoClient {
-    cliVersion: string = '0.*';
+    cliVersion: string = 'Latest';
 
     async setupEnvironment() {
-
-        // prevent welcome message
-        process.env.DOTNET_NOLOGO = 'true';
 
         console.log('------------------------------------------------------------------------------');
 
@@ -34,10 +32,6 @@ export class MsdoClient {
         }
 
         return cliVersion;
-    }
-
-    isNullOrWhiteSpace(value: string) : boolean {
-        return !value || !value.trim();
     }
 
     getCliFilePath() : string {
