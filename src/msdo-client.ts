@@ -82,7 +82,7 @@ async function init() {
  * @param inputArgs - The CLI arguments to pass to "guardian run"
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
  */
-async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
+export async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
     let cliFilePath: string = null;
     let args: string[] = [];
 
@@ -109,12 +109,12 @@ async function run(inputArgs: string[], telemetryEnvironment: string = 'github')
         let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
         core.debug(`sarifFile = ${sarifFile}`);
 
-        // Write it as a GitHub Action variable for follow up tasks to consume
+        // Write it as a environment variable for follow up tasks to consume
         core.exportVariable('MSDO_SARIF_FILE', sarifFile);
         core.setOutput('sarifFile', sarifFile);
 
         args.push('--export-breaking-results-to-file');
-        args.push(`${sarifFile}`);
+        args.push(sarifFile);
 
         args.push('--telemetry-environment');
         args.push(telemetryEnvironment);
