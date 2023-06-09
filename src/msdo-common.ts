@@ -135,3 +135,13 @@ export function getMsdoBreakEnvironmentVariable() : boolean {
     core.debug(`msdoBreak = ${msdoBreak}`);
     return msdoBreak;
 }
+
+/**
+ * Returns a promise that will resolve after the given number of milliseconds.
+ * 
+ * @param ms The number of milliseconds to sleep
+ * @returns An awaitable promise
+ */
+export function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

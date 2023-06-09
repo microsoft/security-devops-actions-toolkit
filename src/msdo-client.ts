@@ -2,106 +2,138 @@ import * as path from 'path';
 import * as process from 'process';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
-import * as fs from 'fs';
 import * as common from './msdo-common';
-import { MsdoInstaller } from './msdo-installer';
+import * as installer from './msdo-installer';
 
-export class MsdoClient {
-    cliVersion: string = 'Latest';
+/**
+ * The default version of Guardian to install if no version is specified.
+ */
+const cliVersionDefault: string = 'Latest';
 
-    async setupEnvironment() {
+/**
+ * Sets up the environment for the Guardian run.
+ * Sets pipeline variables.
+ * Resolves the version of Guardian to install.
+ * Installs Guardian
+ * 
+ * @param taskFolder The folder of the task that is using the Guardian Pipeline
+ */
+async function setupEnvironment(): Promise<void> {
+    
+    console.log('------------------------------------------------------------------------------');
 
-        console.log('------------------------------------------------------------------------------');
-
-        if (!process.env.MSDO_FILEPATH) {
-            let cliVersion = this.resolveCliVersion();
-            let msdoInstaller = new MsdoInstaller();
-            await msdoInstaller.install(cliVersion);
-        }
-
-        process.env.GDN_SETTINGS_FOLDERS = `Install=${process.env.MSDO_PACKAGES_DIRECTORY}`
-
-        console.log('------------------------------------------------------------------------------');
+    if (!process.env.MSDO_FILEPATH) {
+        let cliVersion = resolveCliVersion();
+        await installer.install(cliVersion);
     }
 
-    resolveCliVersion() : string {
-        let cliVersion = this.cliVersion;
+    process.env.GDN_SETTINGS_FOLDERS = `Install=${process.env.MSDO_PACKAGES_DIRECTORY}`
 
-        if (process.env.MSDO_VERSION) {
-            cliVersion = process.env.MSDO_VERSION;
-        }
+    console.log('------------------------------------------------------------------------------');
+}
 
-        return cliVersion;
+/**
+ * Resolves the version of Guardian to install.
+ * 
+ * @returns The version of Guardian to install
+ */
+function resolveCliVersion(): string {
+    let cliVersion = cliVersionDefault;
+
+    if (process.env.MSDO_VERSION) {
+        cliVersion = process.env.MSDO_VERSION;
     }
 
-    getCliFilePath() : string {
-        let cliFilePath: string = process.env.MSDO_FILEPATH;
+    if (cliVersion.includes('*')) {
+        // Before manual nuget installs, "1.*" was acceptable.
+        // As this is no longer supported, and it functionally meant "Latest",
+        // default that value back to Latest
+        cliVersion = 'Latest';
+    }
+
+    return cliVersion;
+}
+
+/**
+ * Gets the path to the MSDO CLI
+ * 
+ * @returns The path to the MSDO CLI
+ */
+function getCliFilePath() : string {
+    let cliFilePath: string = process.env.MSDO_FILEPATH;
+    core.debug(`cliFilePath = ${cliFilePath}`);
+    return cliFilePath;
+}
+
+/**
+ * Runs "guardian init" to ensure the Guardian CLI is initialized.
+ */
+async function init() {
+    try {
+        let cliFilePath = getCliFilePath();
+        await exec.exec(cliFilePath, ['init', '--force']);
+    } catch (error) {
+        core.debug(error);
+    }
+}
+
+/**
+ * Runs "guardian run" with the input CLI arguments
+ * @param inputArgs - The CLI arguments to pass to "guardian run"
+ * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
+ */
+async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
+    let cliFilePath: string = null;
+    let args: string[] = [];
+
+    try {
+        await setupEnvironment();
+        await init();
+
+        cliFilePath = process.env.MSDO_FILEPATH;
         core.debug(`cliFilePath = ${cliFilePath}`);
-        return cliFilePath;
+
+        if (inputArgs != null) {
+            for (let i = 0; i < inputArgs.length; i++) {
+                args.push(inputArgs[i]);
+            }
+        }
+
+        args.push('--not-break-on-detections');
+
+        if (core.isDebug()) {
+            args.push('--logger-level');
+            args.push('trace');
+        }
+
+        let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
+        core.debug(`sarifFile = ${sarifFile}`);
+
+        // Write it as a GitHub Action variable for follow up tasks to consume
+        core.exportVariable('MSDO_SARIF_FILE', sarifFile);
+        core.setOutput('sarifFile', sarifFile);
+
+        args.push('--export-breaking-results-to-file');
+        args.push(`${sarifFile}`);
+
+        args.push('--telemetry-environment');
+        args.push(telemetryEnvironment);
+
+    } catch (error) {
+        core.error('Exception occurred while initializing MSDO:');
+        core.error(error);
+        core.setFailed(error);
+        return;
     }
 
-    async init() {
-        try {
-            let cliFilePath = this.getCliFilePath();
-            await exec.exec(cliFilePath, ['init', '--force']);
-        } catch (error) {
-            core.debug(error);
-        }
-    }
+    try {
+        core.debug('Running Microsoft Security DevOps...');
 
-    async run(inputArgs: string[], telemetryEnvironment: string = 'github') {
-        let cliFilePath: string = null;
-        let args: string[] = [];
+        await exec.exec(cliFilePath, args);
 
-        try {
-            await this.setupEnvironment();
-            await this.init();
-
-            cliFilePath = process.env.MSDO_FILEPATH;
-            core.debug(`cliFilePath = ${cliFilePath}`);
-
-            if (inputArgs != null) {
-                for (let i = 0; i < inputArgs.length; i++) {
-                    args.push(inputArgs[i]);
-                }
-            }
-
-            args.push('--not-break-on-detections');
-
-            if (core.isDebug()) {
-                args.push('--logger-level');
-                args.push('trace');
-            }
-
-            let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
-            core.debug(`sarifFile = ${sarifFile}`);
-
-            // Write it as a GitHub Action variable for follow up tasks to consume
-            core.exportVariable('MSDO_SARIF_FILE', sarifFile);
-            core.setOutput('sarifFile', sarifFile);
-
-            args.push('--export-breaking-results-to-file');
-            args.push(`${sarifFile}`);
-
-            args.push('--telemetry-environment');
-            args.push(telemetryEnvironment);
-
-        } catch (error) {
-            core.error('Exception occurred while initializing MSDO:');
-            core.error(error);
-            core.setFailed(error);
-            return;
-        }
-
-        try {
-            core.debug('Running Microsoft Security DevOps...');
-
-            await exec.exec(cliFilePath, args);
-
-            // TODO: process exit codes
-        } catch (error) {
-            core.setFailed(error);
-            return;
-        }
+        // TODO: process exit codes
+    } catch (error) {
+        core.setFailed(error);
+        return;
     }
 }
