@@ -588,8 +588,8 @@ async function downloadFile(
             } catch (error) {
                 errors.push(error);
                 if (retries > 0) {
-                    tl.debug(`Error downloading url: ${error.message}`);
-                    tl.debug(`Retrying download of url: ${url}`);
+                    core.debug(`Error downloading url: ${error.message}`);
+                    core.debug(`Retrying download of url: ${url}`);
                     await common.sleep(retryDelay);
                 }
             }
