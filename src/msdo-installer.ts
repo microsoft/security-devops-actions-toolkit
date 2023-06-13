@@ -48,7 +48,7 @@ export async function install(cliVersion: string) {
     core.debug(`agentVersionsDirectory = ${agentVersionsDirectory}`);
     common.ensureDirectory(agentVersionsDirectory);
 
-    if (this.isInstalled(agentVersionsDirectory, packageName, cliVersion)) {
+    if (isInstalled(agentVersionsDirectory, packageName, cliVersion)) {
         return;
     }
 

@@ -57,7 +57,7 @@ export function directoryExists(directoryPath): Promise<boolean> {
 export function getDirectories(directory: string) : string[] {
     // read the directory for all paths
     // filter for directories
-    return fs.readdirSync(directory).filter(p => this.isDirectory(directory, p));
+    return fs.readdirSync(directory).filter(p => isDirectory(directory, p));
 }
 
 /**
