@@ -11,6 +11,36 @@ A GitHub Actions javascript library for running the [Microsoft Security DevOps C
 
 * [Microsoft Security DevOps Task Library for Azure DevOps](https://github.com/microsoft/security-devops-azdevops-task-lib)
 
+## Build
+
+### Preqrequisities:
+
+* Install [node.js](https://nodejs.org/en) (for npm)
+* Install [gulp-cli](https://www.npmjs.com/package/gulp-cli) globally:
+  ```
+  npm install -g gulp-cli
+  ```
+* Install node package dependencies
+  ```
+  npm install
+  ```
+
+To build, simply run `gulp` in the root of the repo:
+```
+gulp
+```
+
+The build:
+1. Compiles the typescript in the `./src` directory
+1. Outputs javascript to the `./dist` directory
+1. Copies the `./package.json` file to the `./dist` folder
+
+## Publish
+
+This package is hosted on [this repo's package feed](https://github.com/microsoft/security-devops-azdevops-task-lib/pkgs/npm/security-devops-azdevops-task-lib).
+
+To publish a build, please see ["Working with the npm registry"](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-to-github-packages).
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
