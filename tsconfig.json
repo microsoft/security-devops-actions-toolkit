@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "lib": [
       "es6"
     ],
