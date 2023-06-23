@@ -532,9 +532,13 @@ async function requestJson(url: string, options: Object): Promise<Object> {
     return new Promise((resolve, reject) => {
         core.debug(`${options['method'].toUpperCase()} ${url}`);
         const req = https.request(url, options, async (res) => {
-            // decompress the response if it's gzipped
-            const decompressResponse = await import('decompress-response');
-            res = decompressResponse.default(res);
+            // attempt to decompress the response if it's gzipped
+            try {
+                const decompressResponse = await import('decompress-response');
+                res = decompressResponse.default(res);
+            } catch (error) {
+                core.debug(`Failed to add response decompression: ${error.message}`);
+            }
 
             if (res.statusCode !== 200) {
                 reject(new Error(`Failed to call: ${url}. Status code: ${res.statusCode}`));
