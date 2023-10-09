@@ -1,9 +1,11 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as common from './msdo-common';
 import * as installer from './msdo-installer';
+import AdmZip = require('adm-zip');
 
 /**
  * The default version of Guardian to install if no version is specified.
@@ -85,8 +87,22 @@ async function init() {
 export async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
     let cliFilePath: string = null;
     let args: string[] = [];
+    let debugDrop = process.env.GDN_DEBUG_DROP;
+
+    const gdnTaskLibFolder = path.resolve(__dirname);
+    core.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
+
+    const nodeModulesFolder = path.dirname(path.dirname(gdnTaskLibFolder));
+    core.debug(`nodeModulesFolder = ${nodeModulesFolder}`);
+
+    const taskFolder = path.dirname(nodeModulesFolder);
+    core.debug(`taskFolder = ${taskFolder}`); 
+
+    const debugFolder = path.join(taskFolder, 'debug');
+    core.debug(`debugFolder = ${debugFolder}`);
 
     try {
+
         await setupEnvironment();
         await init();
 
@@ -119,6 +135,19 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         args.push('--telemetry-environment');
         args.push(telemetryEnvironment);
 
+        // Include the debug drop option on the command line if applicable.
+        core.debug(`GdnDebugDrop = ${debugDrop}`);
+        if (debugDrop)
+        {
+            args.push('--debug-drop');
+            args.push('--debug-drop-path');
+            args.push(debugFolder);
+            const debugFolderEnvVarName = `GDN_DEBUGDROPPATH`;
+
+            core.debug(`Debug Drop enabled. ${debugFolderEnvVarName}: ${debugFolder}`);
+            process.env[debugFolderEnvVarName] = debugFolder;
+        }
+
     } catch (error) {
         core.error('Exception occurred while initializing MSDO:');
         core.error(error);
@@ -129,11 +158,111 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
     try {
         core.debug('Running Microsoft Security DevOps...');
 
+        // Ensure debug folder starts clean
+        cleanupDirectory(debugFolder);
         await exec.exec(cliFilePath, args);
+
+        // Package up debug drop if applicable.
+        let debugStagingDir = '';
+        core.debug(`GdnDebugDrop = ${debugDrop}`);
+        if (debugDrop) {
+            if (fs.existsSync(debugFolder)) {
+                core.debug("Creating debug drop archive...");
+                let zippedOutput = getZippedFolder(debugFolder);
+
+                const instanceDirectory = process.env.GITHUB_WORKSPACE;
+                debugStagingDir = path.join(instanceDirectory, '.gdn', 'debugdrop');
+                if (!fs.existsSync(debugStagingDir)) {
+                    core.debug(`Creating missing folder: ${debugStagingDir}`);
+                    fs.mkdirSync(debugStagingDir);
+                }
+
+                let debugDropArtifact = path.join(debugStagingDir, `MSDO_debug.zip`);
+                let dupeCount = 1;
+                while (fs.existsSync(debugDropArtifact)) {
+                    core.debug(`Debug Drop with the name ${debugDropArtifact} already exists, updating name to avoid collision...`);
+                    dupeCount += 1;
+                    debugDropArtifact = path.join(debugStagingDir, `MSDO_debug_${dupeCount}.zip`);
+                }
+                fs.copyFileSync(zippedOutput, debugDropArtifact);
+                core.debug(`Finished creating: ${debugDropArtifact}`);
+
+                core.debug(`DebugDrop = ${debugStagingDir}`);
+
+                // Write it as a environment variable for follow up tasks to consume
+                core.exportVariable('MSDO_DEBUG_DROP_FOLDER', debugStagingDir);
+                core.setOutput('debugDrop', debugStagingDir);
+
+                core.debug(`Cleaning up: ${debugFolder}`);
+                cleanupDirectory(debugFolder);
+                core.debug(`Successfully cleaned up debug dump.`);
+            }
+        }
 
         // TODO: process exit codes
     } catch (error) {
         core.setFailed(error);
         return;
     }
+}
+
+function getZippedFolder(dir): string {
+    core.debug(`Zipping up folder: ${dir}`)
+    let allPaths = getFilePathsRecursively(dir);
+    const zip = new AdmZip();
+    for (let filePath of allPaths) {
+        core.debug(`Adding file to archive: ${filePath}`);
+        zip.addLocalFile(filePath);
+    }
+
+    let destPath = `${dir}.zip`;
+    core.debug(`Writing to file: ${destPath}`)
+    zip.writeZip(destPath);
+    if (fs.existsSync(destPath)) {
+        core.debug(`Successfully wrote file: ${destPath}`)
+    } else {
+        core.debug(`Something went wrong! File does not exist: ${destPath}`)
+    }
+    return destPath;
+}
+
+// Returns a flat array of absolute paths to all files contained in the dir
+function getFilePathsRecursively(dir) {
+    core.debug(`Searching for files under dir: ${dir}`)
+    var files = [];
+    let fileList = fs.readdirSync(dir);
+    var remaining = fileList.length;
+    if (!remaining) return files;
+
+    for (let file of fileList) {
+        file = path.resolve(dir, file);
+        let stat = fs.statSync(file);
+        if (stat && stat.isDirectory()) {
+            let f = getFilePathsRecursively(file);
+            files = files.concat(f);
+        } else {
+            files.push(file);
+        }
+        if (!--remaining) {
+            return files;
+        }
+    }
+}
+
+function cleanupDirectory(dir) {
+    if (!fs.existsSync(dir)) return;
+
+    let items = fs.readdirSync(dir);
+
+    for (let item of items) {
+        item = path.resolve(dir, item)
+        let stat = fs.statSync(item);
+        if (stat && stat.isDirectory()) {
+            cleanupDirectory(item)
+        } else {
+            fs.unlinkSync(item);
+        }
+    }
+
+    fs.rmdirSync(dir);
 }

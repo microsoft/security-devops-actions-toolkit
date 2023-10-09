@@ -229,27 +229,7 @@ async function _resolveVersion(
     let result = await requestJson(searchQueryServiceUrlWithQuery, requestOptions);
     const findPreRelease = common.isLatestPreRelease(packageVersion);
 
-    for (let packageGroup of result['items']) {
-        for (let packageInfo of packageGroup['items']) {
-            let catalogEntry = packageInfo['catalogEntry'];
-            if (catalogEntry['listed'] != true) {
-                // skip delisted packages
-                continue;
-            }
-
-            if (!findPreRelease && common.isPreRelease(catalogEntry['version'])) {
-                // skip prerelease packages if we're looking for a stable version
-                continue;
-            }
-
-            resolvedVersion = catalogEntry['version'];
-            break;
-        }
-
-        if (resolvedVersion != null) {
-            break;
-        }
-    }
+    resolvedVersion = findLatestVersion(result, findPreRelease);
     
     if (resolvedVersion == null) {
         throw new Error(`Package not found: ${packageName}`);
@@ -258,20 +238,127 @@ async function _resolveVersion(
     return resolvedVersion;
 }
 
-function rampedDeployment(
-    datetime: Date,
-    rampMinutes: number): boolean {
-    let ramped = false;
+/**
+ * Finds the latest version in a SearchQueryService response.
+ * 
+ * @param result A JSON object returned from the SearchQueryService
+ * @param findPreRelease Whether or not to find a pre-release version
+ * @returns The latest version of the package
+ */
+function findLatestVersion(
+    result: object,
+    findPreRelease: boolean): string {
+    let latestVersion = null;
+    let latestVersionParts = null;
+    let latestIsPreRelease = false;
+    let latestPreReleaseFlag = null;
 
-    let curDate = new Date();
+    if (result == null || result['items'] == null) {
+        return latestVersion;
+    }
 
-    let diff = curDate.getTime() - datetime.getTime();
+    let currentCatalogEntry = null;
+    let currentVersion = null;
+    let currentVersionParts = null;
+    let currentFullVersionParts = null;
+    let currentVersionNumbersString = null;
+    let currentIsLatest = false;
+    let currentIsPreRelease = false;
+    let currentPreReleaseFlag = null;
 
-    datetime.setMinutes
-    
-    
-    return Math.random() > diff;
+    for (let packageGroup of result['items']) {
+        for (let packageInfo of packageGroup['items']) {
+            currentCatalogEntry = packageInfo['catalogEntry'];
+
+            if (currentCatalogEntry['listed'] != true) {
+                // skip delisted packages
+                continue;
+            }
+
+            currentVersion = currentCatalogEntry['version'];
+            currentIsPreRelease = common.isPreRelease(currentVersion);
+
+            if (!findPreRelease && currentIsPreRelease) {
+                // skip prerelease packages if we're looking for a stable version
+                continue;
+            }
+
+            currentFullVersionParts = currentVersion.split("-");
+            if (currentIsPreRelease) {
+                currentPreReleaseFlag = currentFullVersionParts[1];
+            }
+
+            currentVersionNumbersString = currentFullVersionParts[0];
+            currentVersionParts = currentVersionNumbersString.split(".");
+            currentIsLatest = latestVersion == null;
+
+            if (!currentIsLatest) {
+                // Evaluate the current version against the latest version
+
+                // Handle comparisons of separate level versions
+                // Some packages exclude Patch or include Revisions up to two levels (Rev1 and Rev2)
+                let maxVersionParts = currentVersionParts.length;
+                if (currentVersionParts.length < maxVersionParts) {
+                    maxVersionParts = latestVersionParts.length;
+                }
+
+                for (let versionPartIndex = 0; versionPartIndex < currentVersionParts.length; versionPartIndex++) {
+                    let versionPart = 0;
+                    let latestVersionPart = 0;
+
+                    let isLastVersionPart = versionPartIndex == (maxVersionParts - 1);
+
+                    if (versionPartIndex < currentVersionParts.length) {
+                        versionPart = parseInt(currentVersionParts[versionPartIndex]);
+                    }
+
+                    if (versionPartIndex < latestVersionParts.length) {
+                        latestVersionPart = parseInt(latestVersionParts[versionPartIndex]);
+                    }
+
+                    if (versionPart > latestVersionPart) {
+                        currentIsLatest = true;
+                    } else if (versionPart == latestVersionPart) {
+                        currentIsLatest = isLastVersionPart
+                            &&
+                            (
+                                (currentIsPreRelease && latestIsPreRelease && currentPreReleaseFlag > latestPreReleaseFlag)
+                                ||
+                                (!currentIsPreRelease && latestIsPreRelease)
+                            );
+                    } else {
+                        // Current version is less than latest found
+                        break;
+                    }
+
+                    if (currentIsLatest) {
+                        break;
+                    }
+                }
+            }
+
+            if (currentIsLatest) {
+                latestVersion = currentVersion;
+                latestVersionParts = currentVersionParts;
+                latestIsPreRelease = currentIsPreRelease;
+                latestPreReleaseFlag = currentPreReleaseFlag;
+            }
+        }
+    }
+
+    core.debug(`latestVersion = ${latestVersion}`);
+    return latestVersion;
 }
+
+// function rampedDeployment(
+//     datetime: Date,
+//     rampMinutes: number): boolean {
+//     let ramped = false;
+//     let curDate = new Date();
+//     let diff = curDate.getTime() - datetime.getTime();
+//     datetime.setMinutes
+//     return Math.random() > diff;
+// }
 
 /**
  * Top level service call to download a package from a NuGet server.
