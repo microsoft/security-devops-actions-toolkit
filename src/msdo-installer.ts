@@ -167,6 +167,7 @@ function setVariables(
 
     process.env.MSDO_DIRECTORY = msdoDirectory;
     process.env.MSDO_FILEPATH = msdoFilePath;
+    process.env.MSDO_INSTALLEDVERSION = cliVersion;
 
     let exists = fs.existsSync(process.env.MSDO_FILEPATH);
 

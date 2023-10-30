@@ -145,3 +145,40 @@ export function getMsdoBreakEnvironmentVariable() : boolean {
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+/**
+ * Lazy checks if the version1 is greater than or equal to version2.
+ * 
+ * @param version1 The version to check.
+ * @param version2 The version to compare against.
+ * @returns True if the version is greater than or equal to version2, or true in any error condition.
+ */
+export function isVersionGreaterThanOrEqualTo(version1: string, version2: string): boolean {
+    if (version1 == null || version2 == null) {
+        return true;
+    }
+
+    let version1Parts = version1.split('.');
+    let version2Parts = version2.split('.');
+
+    if (version1Parts == null || version2Parts == null) {
+        return true;
+    }
+
+    let version1Part = 0;
+    let version2Part = 0;
+
+    for (let i = 0; i < version1Parts.length; i++) {
+        version1Part = parseInt(version1Parts[i] || '0');
+        version2Part = parseInt(version2Parts[i] || '0');
+
+        if (version1Part > version2Part) {
+            return true;
+        }
+        else if (version1Part < version2Part) {
+            return false;
+        }
+    }
+
+    return true;
+}
