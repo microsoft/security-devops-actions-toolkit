@@ -129,9 +129,6 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         core.exportVariable('MSDO_SARIF_FILE', sarifFile);
         core.setOutput('sarifFile', sarifFile);
 
-        args.push('--export-breaking-results-to-file');
-        args.push(sarifFile);
-
         if (common.isVersionGreaterThanOrEqualTo(process.env.MSDO_INSTALLEDVERSION, '0.183.0')) {
             // Export all SARIF results to a file
             args.push('--export-file');
