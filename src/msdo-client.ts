@@ -129,7 +129,15 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         core.exportVariable('MSDO_SARIF_FILE', sarifFile);
         core.setOutput('sarifFile', sarifFile);
 
-        args.push('--export-breaking-results-to-file');
+        if (common.isVersionGreaterThanOrEqualTo(process.env.MSDO_INSTALLEDVERSION, '0.183.0')) {
+            // Export all SARIF results to a file
+            args.push('--export-file');
+        } else {
+            // This still exists, but the behavior was corrected in 0.183.0
+            // This defaults to only exporting breaking results, as the name implies
+            args.push('--export-breaking-results-to-file');
+        }
+        
         args.push(sarifFile);
 
         args.push('--telemetry-environment');
