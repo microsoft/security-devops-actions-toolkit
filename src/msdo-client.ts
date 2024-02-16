@@ -87,7 +87,7 @@ async function init() {
 export async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
     let cliFilePath: string = null;
     let args: string[] = [];
-    let debugDrop = process.env.GDN_DEBUG_DROP?.toLowerCase();
+    let debugDrop = common.parseBool(process.env.GDN_DEBUG_DROP);
 
     const gdnTaskLibFolder = path.resolve(__dirname);
     core.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
@@ -145,7 +145,7 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
 
         // Include the debug drop option on the command line if applicable.
         core.debug(`GdnDebugDrop = ${debugDrop}`);
-        if (debugDrop == 'true')
+        if (debugDrop)
         {
             args.push('--debug-drop');
             args.push('--debug-drop-path');
@@ -173,7 +173,7 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         // Package up debug drop if applicable.
         let debugStagingDir = '';
         core.debug(`GdnDebugDrop = ${debugDrop}`);
-        if (debugDrop == 'true') {
+        if (debugDrop) {
             if (fs.existsSync(debugFolder)) {
                 core.debug("Creating debug drop archive...");
                 let zippedOutput = getZippedFolder(debugFolder);
