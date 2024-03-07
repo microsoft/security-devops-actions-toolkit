@@ -87,7 +87,7 @@ async function init() {
 export async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
     let cliFilePath: string = null;
     let args: string[] = [];
-    let debugDrop = process.env.GDN_DEBUG_DROP;
+    let debugDrop = common.parseBool(process.env.GDN_DEBUG_DROP);
 
     const gdnTaskLibFolder = path.resolve(__dirname);
     core.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
