@@ -24,6 +24,19 @@ async function setupEnvironment(): Promise<void> {
     
     console.log('------------------------------------------------------------------------------');
 
+    // initialize the _msdo directory
+    let agentDirectory = path.resolve(path.join(process.env.GITHUB_WORKSPACE, '../../_msdo'));
+    core.debug(`agentDirectory = ${agentDirectory}`);
+    common.ensureDirectory(agentDirectory);
+
+    let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
+    if (!agentPackagesDirectory) {
+        agentPackagesDirectory = path.join(agentDirectory, 'packages');
+        core.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
+        common.ensureDirectory(agentPackagesDirectory);
+        process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
+    }
+    
     if (!process.env.MSDO_FILEPATH) {
         let cliVersion = resolveCliVersion();
         await installer.install(cliVersion);
