@@ -80,8 +80,8 @@ async function init() {
 }
 
 /**
- * Runs "guardian run" with the input CLI arguments
- * @param inputArgs - The CLI arguments to pass to "guardian run"
+ * Runs "guardian [run | upload]" with the input CLI arguments
+ * @param inputArgs - The CLI arguments to pass to guardian
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
  */
 export async function run(inputArgs: string[], telemetryEnvironment: string = 'github') {
@@ -109,36 +109,42 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         cliFilePath = process.env.MSDO_FILEPATH;
         core.debug(`cliFilePath = ${cliFilePath}`);
 
-        if (inputArgs != null) {
+        if (inputArgs != null && inputArgs.length != 0) {
             for (let i = 0; i < inputArgs.length; i++) {
                 args.push(inputArgs[i]);
             }
         }
-
-        args.push('--not-break-on-detections');
 
         if (core.isDebug()) {
             args.push('--logger-level');
             args.push('trace');
         }
 
-        let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
-        core.debug(`sarifFile = ${sarifFile}`);
+        let isUploadExisting: boolean = inputArgs[0] == "upload";
 
-        // Write it as a environment variable for follow up tasks to consume
-        core.exportVariable('MSDO_SARIF_FILE', sarifFile);
-        core.setOutput('sarifFile', sarifFile);
+        // These args either aren't compatible with or mean nothing in the
+        // `guardian upload` command scenario
+        if (!isUploadExisting) {
+            args.push('--not-break-on-detections');
 
-        if (common.isVersionGreaterThanOrEqualTo(process.env.MSDO_INSTALLEDVERSION, '0.183.0')) {
-            // Export all SARIF results to a file
-            args.push('--export-file');
-        } else {
-            // This still exists, but the behavior was corrected in 0.183.0
-            // This defaults to only exporting breaking results, as the name implies
-            args.push('--export-breaking-results-to-file');
+            let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
+            core.debug(`sarifFile = ${sarifFile}`);
+
+            // Write it as a environment variable for follow up tasks to consume
+            core.exportVariable('MSDO_SARIF_FILE', sarifFile);
+            core.setOutput('sarifFile', sarifFile);
+
+            if (common.isVersionGreaterThanOrEqualTo(process.env.MSDO_INSTALLEDVERSION, '0.183.0')) {
+                // Export all SARIF results to a file
+                args.push('--export-file');
+            } else {
+                // This still exists, but the behavior was corrected in 0.183.0
+                // This defaults to only exporting breaking results, as the name implies
+                args.push('--export-breaking-results-to-file');
+            }
+            
+            args.push(sarifFile);
         }
-        
-        args.push(sarifFile);
 
         args.push('--telemetry-environment');
         args.push(telemetryEnvironment);
