@@ -125,7 +125,9 @@ export async function run(inputArgs: string[], telemetryEnvironment: string = 'g
         // These args either aren't compatible with or mean nothing in the
         // `guardian upload` command scenario
         if (!isUploadExisting) {
-            args.push('--not-break-on-detections');
+            if (!common.getMsdoBreakEnvironmentVariable()) {
+                args.push('--not-break-on-detections');
+            }
 
             let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msdo.sarif');
             core.debug(`sarifFile = ${sarifFile}`);
