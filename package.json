@@ -7,7 +7,8 @@
     "repository": "https://github.com/microsoft/security-devops-actions-toolkit.git",
     "homepage": "https://github.com/microsoft/security-devops-actions-toolkit",
     "scripts": {
-        "build": "npx gulp"
+        "build": "npx gulp",
+        "test": "npm run build && node --test test/msdo-nuget-client.tests.js"
     },
     "dependencies": {
         "@actions/core": "1.10.0",

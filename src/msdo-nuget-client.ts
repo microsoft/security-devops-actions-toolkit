@@ -618,17 +618,39 @@ function resolveRequestOptions(accessToken: string): Object {
 async function requestJson(url: string, options: Object): Promise<Object> {
     return new Promise((resolve, reject) => {
         core.debug(`${options['method'].toUpperCase()} ${url}`);
-        const req = https.request(url, options, async (res) => {
-            // attempt to decompress the response if it's gzipped
-            try {
-                const decompressResponse = await import('decompress-response');
-                res = decompressResponse.default(res);
-            } catch (error) {
-                core.debug(`Failed to add response decompression: ${error.message}`);
+        const requestOptions = {
+            ...options,
+            headers: {
+                ...options['headers'],
+                'Accept-Encoding': 'gzip, deflate, identity, br;q=0'
             }
+        };
+        const req = https.request(url, requestOptions, async (res) => {
+            res.on('error', reject);
 
             if (res.statusCode !== 200) {
+                res.resume();
                 reject(new Error(`Failed to call: ${url}. Status code: ${res.statusCode}`));
+                return;
+            }
+
+            const encoding = (res.headers['content-encoding'] || '').trim().toLowerCase();
+            if (['', 'identity', 'gzip', 'deflate'].indexOf(encoding) === -1) {
+                res.destroy();
+                reject(new Error(`Unsupported NuGet Content-Encoding: ${encoding}. Brotli decoding is disabled for CVE-2026-111497.`));
+                return;
+            }
+
+            try {
+                const decompressResponse = await import('decompress-response');
+                const decompressed = decompressResponse.default(res);
+                if (decompressed !== res) {
+                    decompressed.on('error', reject);
+                    res = decompressed;
+                }
+            } catch (error) {
+                res.destroy();
+                reject(error);
                 return;
             }
 
