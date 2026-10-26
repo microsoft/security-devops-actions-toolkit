@@ -35,6 +35,16 @@ The build:
 1. Outputs javascript to the `./dist` directory
 1. Copies the `./package.json` file to the `./dist` folder
 
+## Test
+
+Run `npm test` to build the toolkit and exercise NuGet installation with local response fixtures. No remote feed or credentials are required.
+
+## NuGet response encoding
+
+NuGet metadata requests explicitly decline Brotli and accept identity, gzip, and deflate. Responses with unsupported content encodings, including unsolicited Brotli, are rejected before decompression. Gzip, zlib-wrapped deflate, and raw deflate remain supported; package downloads and authentication are unchanged.
+
+This prevents this metadata path from invoking Node.js's native Brotli decoder for [CVE-2026-111497](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases). It does not patch Node.js or other consumers. Consumers must adopt a reviewed release of the toolkit, and patched runner interpreters remain the preferred runtime remediation.
+
 ## Publish
 
 This package is hosted on [this repo's package feed](https://github.com/microsoft/security-devops-azdevops-task-lib/pkgs/npm/security-devops-azdevops-task-lib).
